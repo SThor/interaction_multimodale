@@ -3,12 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package StateMachine.Structures;
+package language;
 
 /**
  *
  * @author givelpa
  */
-interface TestableStruct {
-    boolean structComplete();
+public enum Keyword {
+    POSITION,
+    SHAPE, ELLIPSE, RECTANGLE,
+    COLOR
 }

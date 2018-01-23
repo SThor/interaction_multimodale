@@ -3,12 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Language;
+package stateMachine.structures;
+
+import fr.dgac.ivy.Ivy;
+import java.awt.Point;
 
 /**
  *
  * @author givelpa
  */
-public enum Gesture {
-    Move, Remove, Ellipse, Rectangle
+public interface TestableStruct {
+    boolean structComplete();
+
+    public void execute(Ivy bus);
 }

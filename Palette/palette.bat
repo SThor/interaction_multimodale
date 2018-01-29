@@ -1,2 +1,2 @@
-java -classpath ivy.jar;palette.jar fr.irit.elipse.enseignement.isia.PaletteGraphique -b 127.0.0.1:1234
+java -classpath ivy.jar;palette.jar fr.irit.elipse.enseignement.isia.PaletteGraphique -b 127.255.255.255:2010
 pause

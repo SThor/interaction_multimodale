@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE grammar PUBLIC "-//W3C//DTD GRAMMAR 1.0//EN"
+                "grammar.dtd">
+<!-- the default grammar language is FR  -->
+<grammar  version="1.0"
+          mode ="voice"
+          xmlns="http://www.w3.org/2001/06/grammar"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.w3.org/2001/06/grammar
+                              grammar.xsd"
+          xml:lang="fr-FR" root="answer" tag-format="semantics/1.0">
+          
+   <rule id="answer" scope="public"> 
+    <ruleref special="GARBAGE" /> 
+    <one-of>
+	  <item><ruleref uri="#position"/></item>
+	  <item><ruleref uri="#couleur"/></item>
+	  <item><ruleref uri="#designerCouleur"/></item>
+	  <item><ruleref uri="#designerForme"/></item>
+    </one-of>          
+    <tag>out = rules.latest().text;</tag>
+    <ruleref special="GARBAGE" />
+  </rule>
+  
+  <rule id="position">
+	<one-of>
+		<item>ici</item>
+		<item>la</item>
+		<item>a cette position</item>
+	</one-of>
+	<tag>out.text  = "Action:position"</tag>
+  </rule> 
+  
+  <rule id="couleur">
+	<one-of>
+		<item>vert</item>
+		<item>bleu</item>
+		<item>rouge</item>
+		<item>orange</item>
+		<item>jaune</item>
+		<item>violet</item>
+		<item>gris</item>
+		<item>noir</item>
+	</one-of>
+	<tag>out.text  = "Action:couleur Couleur:" + meta.current().text;</tag>
+  </rule> 
+  
+  <rule id="designerCouleur">
+	<one-of>
+		<item>cette couleur</item>
+		<item>de cette couleur</item>
+	</one-of>
+	<tag>out.text  = "Action:designer une couleur"</tag>
+  </rule> 
+  
+  <rule id="designerForme">
+	<one-of>
+		<item>cet objet <ruleref uri="#couleur"/></item>
+		<item>cette ellipse</item>
+		<item>ce rectangle</item>
+	</one-of>
+	<tag>out.text  = "Action:designer une forme Forme designee:" + meta.current().text;</tag>
+  </rule> 
+</grammar>

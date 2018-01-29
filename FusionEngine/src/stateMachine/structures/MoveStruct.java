@@ -9,6 +9,7 @@ package stateMachine.structures;
 import fr.dgac.ivy.Ivy;
 import fr.dgac.ivy.IvyException;
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,12 +19,12 @@ import java.util.logging.Logger;
  * @author givelpa
  */
 public class MoveStruct implements TestableStruct{
-    List<Shape> candidates;
+    List<Shape> candidates = new ArrayList<>();
     Point position;
 
     @Override
     public boolean structComplete() {
-        return !candidates.isEmpty() && position!=null;
+        return candidates != null && !candidates.isEmpty() && position!=null;
     }
 
     @Override

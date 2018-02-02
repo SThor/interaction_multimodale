@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package stateMachine.structures;
+package stateMachine;
 
 
 import fr.dgac.ivy.Ivy;
@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import stateMachine.structures.TestableStruct;
 
 /**
  *
@@ -30,6 +31,7 @@ public class RemoveStruct implements TestableStruct{
     public void execute(Ivy bus) {
         try {
             bus.sendMsg("Palette:SupprimerObjet nom=" + this.candidates.get(0).name);
+            System.out.println("Palette:SupprimerObjet nom=" + this.candidates.get(0).name);
         } catch (IvyException ex) {
             Logger.getLogger(MoveStruct.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -39,7 +41,7 @@ public class RemoveStruct implements TestableStruct{
         try {
             bus.bindMsg("Palette:ResultatTesterPoint x=" + target.x + " y=" + target.y + " nom=(.*)", (client, args) -> {
                 try {
-                    bus.sendMsg("Palette:DemanderInfo nom=" + args[2]);
+                    bus.sendMsg("Palette:DemanderInfo nom=" + args[0]);
                 } catch (IvyException ex) {
                     Logger.getLogger(MoveStruct.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -53,9 +55,9 @@ public class RemoveStruct implements TestableStruct{
                 shape.height = Integer.parseInt(args[4]);
                 shape.background = args[5];
                 shape.border = args[6];
-                if(args[0].startsWith("Rectangle")){
+                if(args[0].startsWith("R")){
                     shape.type = Shape.Type.RECTANGLE;
-                }else if(args[0].startsWith("Ellipse")){
+                }else if(args[0].startsWith("E")){
                     shape.type = Shape.Type.ELLIPSE;
                 }
                 candidates.add(shape);
@@ -68,6 +70,7 @@ public class RemoveStruct implements TestableStruct{
 
     public void filter(Shape.Type type) {
         candidates.removeIf((t) -> {
+            System.out.println("t.type:"+t.type+" filter type:"+type);
             return t.type != type;
         });
     }

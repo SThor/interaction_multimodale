@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package stateMachine.structures;
+package stateMachine;
 
 import fr.dgac.ivy.Ivy;
 import fr.dgac.ivy.IvyException;
@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import stateMachine.structures.TestableStruct;
 
 /**
  *
@@ -36,12 +37,16 @@ public class CreateStruct implements TestableStruct{
             try {
                 bus.sendMsg("Palette:CreerRectangle x=" + this.position.x + ""
                         + " y=" + this.position.y + " couleurFond=" + this.color);
+                System.out.println("Palette:CreerRectangle x=" + this.position.x + ""
+                        + " y=" + this.position.y + " couleurFond=" + this.color);
             } catch (IvyException ex) {
                 Logger.getLogger(CreateStruct.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else if (type.equals(Shape.Type.ELLIPSE)){
             try {
                 bus.sendMsg("Palette:CreerEllipse x=" + this.position.x + ""
+                        + " y=" + this.position.y + " couleurFond=" + this.color);
+                System.out.println("Palette:CreerEllipse x=" + this.position.x + ""
                         + " y=" + this.position.y + " couleurFond=" + this.color);
             } catch (IvyException ex) {
                 Logger.getLogger(CreateStruct.class.getName()).log(Level.SEVERE, null, ex);
@@ -78,6 +83,9 @@ public class CreateStruct implements TestableStruct{
                 break;
             case "noir":
                 this.color = "BLACK";
+                break;
+            default:
+                this.color = color;
                 break;
         }
     }

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package stateMachine.structures;
+package stateMachine;
 
 import fr.dgac.ivy.Ivy;
 import java.awt.Point;

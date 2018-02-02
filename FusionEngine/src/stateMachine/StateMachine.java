@@ -5,17 +5,13 @@
  */
 package stateMachine;
 
+import stateMachine.structures.TestableStruct;
 import fr.dgac.ivy.Ivy;
 import fr.dgac.ivy.IvyClient;
 import fr.dgac.ivy.IvyException;
 import fr.dgac.ivy.IvyMessageListener;
 import language.Gesture;
 import language.Keyword;
-import stateMachine.structures.CreateStruct;
-import stateMachine.structures.MoveStruct;
-import stateMachine.structures.RemoveStruct;
-import stateMachine.structures.Shape;
-import stateMachine.structures.TestableStruct;
 
 import java.awt.Point;
 import java.util.logging.Level;
@@ -33,27 +29,91 @@ public class StateMachine{
     private String tmpColor;
     private Keyword tmpKeyword;
     
-    private Timer actionTimedOut = new Timer(500, (e) -> {
+    private Timer actionTimedOut = new Timer(3000, (e) -> {
+        System.out.println("timer Action");
         timer();
     });
-    private Timer timerPointing = new Timer(2000, (e) -> {
+    private Timer timerPointing = new Timer(3000, (e) -> {
+        System.out.println("timer Pointing");
         timer();
     });
 
     private Ivy bus;
+    private final double SEUIL_SRA = 0.75;
+    private Point oldTmpPoint;
+
+    private void resetValues() {
+        tmpPoint = null;
+        tmpColor = null;
+        tmpKeyword = null;
+        struct = null;
+    }
+
+    private void getColorFromPosition(Point coords) {
+        System.out.println("appel de la fonction relou ************************************************");
+        try {
+            bus.bindMsg("Palette:ResultatTesterPoint x="+coords.x+" y="+coords.y+" nom=(.*)", (client, args) -> {
+                try {
+                    bus.bindMsg("Palette:Info nom="+args[0]+" x=(.*) y=(.*) longueur=(.*) hauteur=(.*) couleurFond=(.*) couleurContour=(.*)", (client1, args1) -> {
+                        switch(args1[4]){
+                            case "green":
+                                tmpColor = "GREEN";
+                                break;
+                            case "blue":
+                                tmpColor = "BLUE";
+                                break;
+                            case "red":
+                                tmpColor = "RED";
+                                break;
+                            case "orange":
+                                tmpColor = "ORANGE";
+                                break;
+                            case "yellow":
+                                tmpColor = "YELLOW";
+                                break;
+                            case "magenta":
+                                tmpColor = "MAGENTA";
+                                break;
+                            case "gray":
+                                tmpColor = "GRAY";
+                                break;
+                            case "black":
+                                tmpColor = "BLACK";
+                                break;
+                        }
+                        updateStructure();
+                    });
+                    bus.sendMsg("Palette:DemanderInfo nom="+args[0]);
+                    System.out.println("sent demanderInfo over "+args[0]);
+                } catch (IvyException ex) {
+                    Logger.getLogger(StateMachine.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+            bus.sendMsg("Palette:TesterPoint x="+coords.x+" y="+coords.y);
+            System.out.println("Palette:TesterPoint x="+coords.x+" y="+coords.y);
+        } catch (IvyException ex) {
+            Logger.getLogger(StateMachine.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
     
     public enum State{
         WAITING_FOR_GESTURE,
         ACTION,
-        INT_1,
-        INT_2,
-        INT_3
+        SRA_SHAPE_THEN_POINTING,
+        POINTING_THEN_SRA,
+        SRA_COLOR_THEN_POINTING
     }
     
     private State state;
 
+    public void setState(State state) {
+        State oldState = this.state;
+        this.state = state;
+        System.out.println("switched from "+oldState+" to "+state);
+    }
+
     public StateMachine() {
-        state = State.WAITING_FOR_GESTURE;
+        setState(State.WAITING_FOR_GESTURE);
         
         setupIvy();
     }
@@ -84,22 +144,31 @@ public class StateMachine{
                     pointing(new Point(Integer.parseInt(args[1]), Integer.parseInt(args[2])));
                 }
             });
-            bus.bindMsg("sra5 Parsed=Action:couleur Couleur:(.*)", (client, args) -> {
-                SRAColor(args[0]);
+            bus.bindMsg("sra5 Parsed=Action:couleur Couleur:(.*) Confidence=(.*) NP(.*)", (client, args) -> {
+                if( Double.parseDouble(args[1].replace(',','.'))>SEUIL_SRA){
+                    SRAColor(args[0]);
+                }
             });
-            bus.bindMsg("sra5 Parsed=Action:position", (client, args) -> {
-                SRA(Keyword.POSITION);
+            bus.bindMsg("sra5 Parsed=Action:position Confidence=(.*) NP(.*)", (client, args) -> {
+                if( Double.parseDouble(args[0].replace(',','.'))>SEUIL_SRA){
+                    SRA(Keyword.POSITION);
+                }
             });
-            bus.bindMsg("sra5 Parsed=Action:designer une couleur", (client, args) -> {
-                SRA(Keyword.COLOR);
+            bus.bindMsg("sra5 Parsed=Action:designer une couleur Confidence=(.*) NP(.*)", (client, args) -> {
+                if( Double.parseDouble(args[0].replace(',','.'))>SEUIL_SRA){
+                    SRA(Keyword.COLOR);
+                }
             });
-            bus.bindMsg("sra5 Parsed=Action:designer une forme Forme:(.*)", (client, args) -> {
-                if(args[0].equals("ce rectangle")){
-                    SRA(Keyword.RECTANGLE);
-                } else if (args[0].equals("cette ellipse")){
-                    SRA(Keyword.ELLIPSE);
-                } else {
-                    SRA(Keyword.SHAPE);
+            bus.bindMsg("sra5 Parsed=Action:designer une forme Forme:(.*) Confidence=(.*) NP(.*)", (client, args) -> {
+                if( Double.parseDouble(args[1].replace(',','.'))>SEUIL_SRA){
+                    if(args[0].equals("ce rectangle")){
+                        SRA(Keyword.RECTANGLE);
+                    } else if (args[0].equals("cette ellipse")){
+                        SRA(Keyword.ELLIPSE);
+                    } else {
+                        SRA(Keyword.SHAPE);
+                    }
+                    System.out.println("Designer forme : "+args[0]);
                 }
             });
         } catch (IvyException ex) {
@@ -113,6 +182,7 @@ public class StateMachine{
      * @param gesture geste reconnu
      */
     public void gesture(Gesture gesture){
+        resetValues();
         switch(gesture){
             case Move:
                 struct = new MoveStruct();
@@ -129,7 +199,7 @@ public class StateMachine{
         }        
         timerPointing.stop();
         actionTimedOut.start();
-        state = State.ACTION;
+        setState(State.ACTION);
     }
     
     public void pointing(Point coords){
@@ -137,40 +207,26 @@ public class StateMachine{
             case WAITING_FOR_GESTURE: //FORBIDDEN
                 break;
             case ACTION:
+                oldTmpPoint = tmpPoint;
                 tmpPoint = coords;
                 timerPointing.start();
                 actionTimedOut.stop();
-                state = State.INT_2;
+                setState(State.POINTING_THEN_SRA);
                 break;
-            case INT_1:
+            case SRA_SHAPE_THEN_POINTING:
                 tmpPoint = coords;
                 updateStructure();
                 timerPointing.stop();
                 actionTimedOut.start();
-                state = State.ACTION;
+                setState(State.ACTION);
                 break;
-            case INT_2: //FORBIDDEN
+            case POINTING_THEN_SRA: //FORBIDDEN
                 break;
-            case INT_3:
-                try {
-                    bus.bindMsg("Palette:ResultatTesterPoint x="+coords.x+" y="+coords.y+" nom=(.*)", (client, args) -> {
-                        try {
-                            bus.bindMsg("Palette:Info nom="+args[0]+" x=(.*) y=(.*) longueur=(.*) hauteur=(.*) couleurFond=(.*) couleurContour=(.*)", (client1, args1) -> {
-                                tmpColor = args1[4];
-                            });
-                            bus.sendMsg("Palette:DemanderInfo nom="+args[0]);
-                        } catch (IvyException ex) {
-                            Logger.getLogger(StateMachine.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                    });
-                    bus.sendMsg("Palette:TesterPoint x="+coords.x+" y="+coords.y);
-                } catch (IvyException ex) {
-                    Logger.getLogger(StateMachine.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                updateStructure();
+            case SRA_COLOR_THEN_POINTING:
+                getColorFromPosition(coords);
                 timerPointing.stop();
                 actionTimedOut.start();
-                state = State.ACTION;
+                setState(State.ACTION);
                 break;
         }
     }
@@ -184,24 +240,33 @@ public class StateMachine{
                     tmpKeyword = keyword;
                     timerPointing.start();
                     actionTimedOut.stop();
-                    state = State.INT_1;
+                    setState(State.SRA_SHAPE_THEN_POINTING);
                 }else if(keyword == keyword.COLOR){
                     tmpKeyword = keyword;
                     timerPointing.start();
                     actionTimedOut.stop();
-                    state = State.INT_3;
+                    setState(State.SRA_COLOR_THEN_POINTING);
+                }else{
+                    tmpKeyword = keyword;
+                    timerPointing.start();
+                    actionTimedOut.stop();
+                    setState(State.SRA_SHAPE_THEN_POINTING);
                 }
                 break;
-            case INT_1: //FORBIDDEN
+            case SRA_SHAPE_THEN_POINTING: //FORBIDDEN
                 break;
-            case INT_2:
+            case POINTING_THEN_SRA:
                 tmpKeyword = keyword;
+                if(keyword == Keyword.COLOR){
+                    getColorFromPosition(tmpPoint);
+                    tmpPoint = oldTmpPoint;
+                }
                 updateStructure();
                 timerPointing.stop();
                 actionTimedOut.start();
-                state = State.ACTION;
+                setState(State.ACTION);
                 break;
-            case INT_3: //FORBIDDEN
+            case SRA_COLOR_THEN_POINTING: //FORBIDDEN
                 break;
         }
     }
@@ -215,13 +280,13 @@ public class StateMachine{
                 updateStructure();
                 timerPointing.stop();
                 actionTimedOut.start();
-                state = State.ACTION;
+                setState(State.ACTION);
                 break;
-            case INT_1: //FORBIDDEN
+            case SRA_SHAPE_THEN_POINTING: //FORBIDDEN
                 break;
-            case INT_2: //FORBIDDEN
+            case POINTING_THEN_SRA: //FORBIDDEN
                 break;
-            case INT_3: //FORBIDDEN
+            case SRA_COLOR_THEN_POINTING: //FORBIDDEN
                 break;
         }
     }
@@ -236,25 +301,27 @@ public class StateMachine{
                 }else{
                     //do nothing, cancel
                 }
-                state = State.WAITING_FOR_GESTURE;
+                setState(State.WAITING_FOR_GESTURE);
+                actionTimedOut.stop();
+                resetValues();
                 break;
-            case INT_1:
+            case SRA_SHAPE_THEN_POINTING:
                 //do nothing, cancel
                 timerPointing.stop();
                 actionTimedOut.start();
-                state = State.ACTION;
+                setState(State.ACTION);
                 break;
-            case INT_2:
+            case POINTING_THEN_SRA:
                 //do nothing, cancel
                 timerPointing.stop();
                 actionTimedOut.start();
-                state = State.ACTION;
+                setState(State.ACTION);
                 break;
-            case INT_3:
+            case SRA_COLOR_THEN_POINTING:
                 //do nothing, cancel
                 timerPointing.stop();
                 actionTimedOut.start();
-                state = State.ACTION;
+                setState(State.ACTION);
                 break;
         }
     }

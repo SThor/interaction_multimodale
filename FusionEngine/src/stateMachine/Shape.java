@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package stateMachine.structures;
+package stateMachine;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -23,7 +23,7 @@ public class Shape {
     
     public String name;
     public Type type = Type.UNSPECIFIED;
-    public Point coords;
+    public Point coords = new Point();
     public int height, width;
     public String background, border;
 }

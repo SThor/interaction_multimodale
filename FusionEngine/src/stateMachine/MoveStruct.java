@@ -3,16 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package stateMachine.structures;
+package stateMachine;
 
 
 import fr.dgac.ivy.Ivy;
 import fr.dgac.ivy.IvyException;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import stateMachine.structures.TestableStruct;
 
 /**
  *
@@ -30,7 +32,8 @@ public class MoveStruct implements TestableStruct{
     @Override
     public void execute(Ivy bus) {
         try {
-            bus.sendMsg("Palette:DeplacerObjetAbsolu nom=" + this.candidates.get(0).name);
+            bus.sendMsg("Palette:DeplacerObjetAbsolu nom=" + this.candidates.get(0).name +" x="+position.x+" y="+position.y);
+            System.out.println("Palette:DeplacerObjetAbsolu nom=" + this.candidates.get(0).name);
         } catch (IvyException ex) {
             Logger.getLogger(MoveStruct.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -44,7 +47,7 @@ public class MoveStruct implements TestableStruct{
         try {
             bus.bindMsg("Palette:ResultatTesterPoint x=" + target.x + " y=" + target.y + " nom=(.*)", (client, args) -> {
                 try {
-                    bus.sendMsg("Palette:DemanderInfo nom=" + args[2]);
+                    bus.sendMsg("Palette:DemanderInfo nom=" + args[0]);
                 } catch (IvyException ex) {
                     Logger.getLogger(MoveStruct.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -73,14 +76,22 @@ public class MoveStruct implements TestableStruct{
     }
 
     public void filter(Shape.Type type) {
-        candidates.removeIf((t) -> {
-            return t.type != type;
-        });
+        Iterator<Shape> it = candidates.iterator();
+        while(it.hasNext()){
+            Shape shape = it.next();
+            if(shape.type != type){
+                it.remove();
+            }
+        }
     }
 
     public void filter(String color) {
-        candidates.removeIf((c) -> {
-            return c.background != color;
-        });
+        Iterator<Shape> it = candidates.iterator();
+        while(it.hasNext()){
+            Shape shape = it.next();
+            if(shape.background != color){
+                it.remove();
+            }
+        }
     }
 }

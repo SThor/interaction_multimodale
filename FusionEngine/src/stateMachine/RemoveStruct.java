@@ -10,10 +10,11 @@ import fr.dgac.ivy.Ivy;
 import fr.dgac.ivy.IvyException;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import stateMachine.structures.TestableStruct;
+import stateMachine.TestableStruct;
 
 /**
  *
@@ -69,15 +70,25 @@ public class RemoveStruct implements TestableStruct{
     }
 
     public void filter(Shape.Type type) {
-        candidates.removeIf((t) -> {
-            System.out.println("t.type:"+t.type+" filter type:"+type);
-            return t.type != type;
-        });
+        Iterator<Shape> it = candidates.iterator();
+        while(it.hasNext()){
+            Shape shape = it.next();
+            System.out.println("shape.type = " + shape.type);
+            System.out.println("type = " + type);
+            if(shape.type != type){
+                System.out.println("Je supprime");
+                it.remove();
+            }
+        }
     }
 
     public void filter(String color) {
-        candidates.removeIf((c) -> {
-            return c.background != color;
-        });
+        Iterator<Shape> it = candidates.iterator();
+        while(it.hasNext()){
+            Shape shape = it.next();
+            if(shape.background != color){
+                it.remove();
+            }
+        }
     }
 }

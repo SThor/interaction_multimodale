@@ -5,7 +5,7 @@
  */
 package stateMachine;
 
-import stateMachine.structures.TestableStruct;
+import stateMachine.TestableStruct;
 import fr.dgac.ivy.Ivy;
 import fr.dgac.ivy.IvyClient;
 import fr.dgac.ivy.IvyException;
@@ -94,6 +94,17 @@ public class StateMachine{
         } catch (IvyException ex) {
             Logger.getLogger(StateMachine.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private void printValues() {
+        if(tmpPoint != null)
+            System.out.println("tmpPoint = " + tmpPoint.toString());
+        if(tmpColor != null)
+            System.out.println("tmpColor = " + tmpColor.toString());
+        if(tmpKeyword != null)
+            System.out.println("tmpKeyword = " + tmpKeyword.toString());
+        if(struct != null)
+            System.out.println("struct = " + struct.toString());
     }
     
     public enum State{
@@ -232,6 +243,7 @@ public class StateMachine{
     }
     
     public void SRA(Keyword keyword){
+        System.out.println("SRA, JE REGARDE LE KEYWORD keyword = " + keyword);
         switch(state){
             case WAITING_FOR_GESTURE: //FORBIDDEN
                 break;
@@ -327,6 +339,8 @@ public class StateMachine{
     }
 
     private void updateStructure() {
+        printValues();
+        
         if(struct instanceof CreateStruct){
             if(tmpPoint != null){
                 ((CreateStruct)struct).setPosition(tmpPoint);                

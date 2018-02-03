@@ -11,7 +11,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import stateMachine.structures.TestableStruct;
+import stateMachine.TestableStruct;
 
 /**
  *

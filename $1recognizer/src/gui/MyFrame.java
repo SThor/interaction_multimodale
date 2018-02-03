@@ -264,7 +264,7 @@ public class MyFrame extends javax.swing.JFrame implements IvyMessageListener{
         stroke.init();
         bus = new Ivy("$1Recognizer", "Ready", null);
         try {
-            bus.start("127.0.0.1:1234");
+            bus.start("127.255.255.255:2010");
             bus.sendToSelf(true);
             bus.bindMsg("Palette:Mouse(.*) x=(.*) y=(.*)", this);
             //bus.bindMsg("Interface(.*)", this);
@@ -297,10 +297,13 @@ public class MyFrame extends javax.swing.JFrame implements IvyMessageListener{
                 stroke.addPoint(Integer.parseInt(args[1]),Integer.parseInt(args[2]));
                 break;
             case "Released":
-                normalizedStroke = new Stroke(stroke);
-                normalizedStroke.normalize();
-                tracePanel.setNormalizedStroke(normalizedStroke);
-                handleGesture();
+                if(stroke.size() > 1){
+                    normalizedStroke = new Stroke(stroke);
+                    normalizedStroke.normalize();
+                    tracePanel.setNormalizedStroke(normalizedStroke);
+                    handleGesture();
+                }
+                
                 break;
             case "Moved":
                 break;
@@ -328,7 +331,7 @@ public class MyFrame extends javax.swing.JFrame implements IvyMessageListener{
                 }
                 recognizedShapeName.setText(bestCandidate);
                 try {
-                    bus.sendMsg("Gest nom="+bestCandidate);
+                    bus.sendMsg("Gesture nom="+bestCandidate);
                 } catch (IvyException ex) {
                     ex.printStackTrace();
                 }

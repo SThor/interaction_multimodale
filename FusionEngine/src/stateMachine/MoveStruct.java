@@ -44,6 +44,7 @@ public class MoveStruct implements TestableStruct{
     }
 
     public void filter(Point target, Ivy bus) {
+                    System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAA DANS LE FILTER DE POINT");
         try {
             bus.bindMsg("Palette:ResultatTesterPoint x=" + target.x + " y=" + target.y + " nom=(.*)", (client, args) -> {
                 try {
@@ -61,13 +62,13 @@ public class MoveStruct implements TestableStruct{
                 shape.height = Integer.parseInt(args[4]);
                 shape.background = args[5];
                 shape.border = args[6];
-                if(args[0].startsWith("Rectangle")){
+                if(args[0].startsWith("R")){
                     shape.type = Shape.Type.RECTANGLE;
-                }else if(args[0].startsWith("Ellipse")){
+                }else if(args[0].startsWith("E")){
                     shape.type = Shape.Type.ELLIPSE;
                 }
                 candidates.add(shape);
-                
+                System.out.println("candidates.size() = " + candidates.size());
             });
             bus.sendMsg("Palette:TesterPoint x=" + target.x + " y=" + target.y);
         } catch (IvyException ex) {
@@ -76,10 +77,15 @@ public class MoveStruct implements TestableStruct{
     }
 
     public void filter(Shape.Type type) {
+        System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAA DANS LE FILTER DE SHAPE");
+        System.out.println("candidates.size() = " + candidates.size());
         Iterator<Shape> it = candidates.iterator();
         while(it.hasNext()){
             Shape shape = it.next();
+            System.out.println("shape.type = " + shape.type);
+            System.out.println("type = " + type);
             if(shape.type != type){
+                System.out.println("    Je supprime");
                 it.remove();
             }
         }

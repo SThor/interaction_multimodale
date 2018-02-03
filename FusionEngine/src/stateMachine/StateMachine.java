@@ -110,9 +110,10 @@ public class StateMachine{
     public enum State{
         WAITING_FOR_GESTURE,
         ACTION,
+        SRA_POSITION_THEN_POINTING,
         SRA_SHAPE_THEN_POINTING,
-        POINTING_THEN_SRA,
-        SRA_COLOR_THEN_POINTING
+        SRA_COLOR_THEN_POINTING,
+        POINTING_THEN_SRA
     }
     
     private State state;
@@ -179,7 +180,6 @@ public class StateMachine{
                     } else {
                         SRA(Keyword.SHAPE);
                     }
-                    System.out.println("Designer forme : "+args[0]);
                 }
             });
         } catch (IvyException ex) {
@@ -224,7 +224,7 @@ public class StateMachine{
                 actionTimedOut.stop();
                 setState(State.POINTING_THEN_SRA);
                 break;
-            case SRA_SHAPE_THEN_POINTING:
+            case SRA_POSITION_THEN_POINTING:
                 tmpPoint = coords;
                 updateStructure();
                 timerPointing.stop();
@@ -239,11 +239,17 @@ public class StateMachine{
                 actionTimedOut.start();
                 setState(State.ACTION);
                 break;
+            case SRA_SHAPE_THEN_POINTING:
+                tmpPoint = coords;
+                updateStructure();
+                timerPointing.stop();
+                actionTimedOut.start();
+                setState(State.ACTION);
+                break;
         }
     }
     
     public void SRA(Keyword keyword){
-        System.out.println("SRA, JE REGARDE LE KEYWORD keyword = " + keyword);
         switch(state){
             case WAITING_FOR_GESTURE: //FORBIDDEN
                 break;
@@ -252,20 +258,20 @@ public class StateMachine{
                     tmpKeyword = keyword;
                     timerPointing.start();
                     actionTimedOut.stop();
-                    setState(State.SRA_SHAPE_THEN_POINTING);
+                    setState(State.SRA_POSITION_THEN_POINTING);
                 }else if(keyword == keyword.COLOR){
                     tmpKeyword = keyword;
                     timerPointing.start();
                     actionTimedOut.stop();
                     setState(State.SRA_COLOR_THEN_POINTING);
-                }else{
+                }else{ // seul cas restant, une ou l'autre des formes
                     tmpKeyword = keyword;
                     timerPointing.start();
                     actionTimedOut.stop();
                     setState(State.SRA_SHAPE_THEN_POINTING);
                 }
                 break;
-            case SRA_SHAPE_THEN_POINTING: //FORBIDDEN
+            case SRA_POSITION_THEN_POINTING: //FORBIDDEN
                 break;
             case POINTING_THEN_SRA:
                 tmpKeyword = keyword;
@@ -279,6 +285,8 @@ public class StateMachine{
                 setState(State.ACTION);
                 break;
             case SRA_COLOR_THEN_POINTING: //FORBIDDEN
+                break;
+            case SRA_SHAPE_THEN_POINTING: //FORBIDDEN
                 break;
         }
     }
@@ -294,11 +302,13 @@ public class StateMachine{
                 actionTimedOut.start();
                 setState(State.ACTION);
                 break;
-            case SRA_SHAPE_THEN_POINTING: //FORBIDDEN
+            case SRA_POSITION_THEN_POINTING: //FORBIDDEN
                 break;
             case POINTING_THEN_SRA: //FORBIDDEN
                 break;
             case SRA_COLOR_THEN_POINTING: //FORBIDDEN
+                break;
+            case SRA_SHAPE_THEN_POINTING: //FORBIDDEN
                 break;
         }
     }
@@ -317,7 +327,7 @@ public class StateMachine{
                 actionTimedOut.stop();
                 resetValues();
                 break;
-            case SRA_SHAPE_THEN_POINTING:
+            case SRA_POSITION_THEN_POINTING:
                 //do nothing, cancel
                 timerPointing.stop();
                 actionTimedOut.start();
@@ -331,6 +341,12 @@ public class StateMachine{
                 break;
             case SRA_COLOR_THEN_POINTING:
                 //do nothing, cancel
+                timerPointing.stop();
+                actionTimedOut.start();
+                setState(State.ACTION);
+                break;
+            case SRA_SHAPE_THEN_POINTING:
+                 //do nothing, cancel
                 timerPointing.stop();
                 actionTimedOut.start();
                 setState(State.ACTION);
@@ -355,9 +371,19 @@ public class StateMachine{
                     ((MoveStruct)struct).setPosition(tmpPoint);
                 }else if(tmpKeyword == Keyword.ELLIPSE){
                     ((MoveStruct)struct).filter(tmpPoint, bus);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(StateMachine.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     ((MoveStruct)struct).filter(Shape.Type.ELLIPSE);
                 }else if(tmpKeyword == Keyword.RECTANGLE){
                     ((MoveStruct)struct).filter(tmpPoint, bus);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(StateMachine.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     ((MoveStruct)struct).filter(Shape.Type.RECTANGLE);
                 }else if(tmpKeyword == Keyword.SHAPE){
                     ((MoveStruct)struct).filter(tmpPoint, bus);
@@ -370,9 +396,19 @@ public class StateMachine{
             if(tmpPoint != null && tmpKeyword !=null){
                 if(tmpKeyword == Keyword.ELLIPSE){
                     ((RemoveStruct)struct).filter(tmpPoint, bus);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(StateMachine.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     ((RemoveStruct)struct).filter(Shape.Type.ELLIPSE);
                 }else if(tmpKeyword == Keyword.RECTANGLE){
                     ((RemoveStruct)struct).filter(tmpPoint, bus);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(StateMachine.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     ((RemoveStruct)struct).filter(Shape.Type.RECTANGLE);
                 }else if(tmpKeyword == Keyword.SHAPE){
                     ((RemoveStruct)struct).filter(tmpPoint, bus);

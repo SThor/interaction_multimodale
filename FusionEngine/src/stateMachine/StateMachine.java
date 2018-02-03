@@ -370,23 +370,11 @@ public class StateMachine{
                 if(tmpKeyword == Keyword.POSITION){
                     ((MoveStruct)struct).setPosition(tmpPoint);
                 }else if(tmpKeyword == Keyword.ELLIPSE){
-                    ((MoveStruct)struct).filter(tmpPoint, bus);
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(StateMachine.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    ((MoveStruct)struct).filter(Shape.Type.ELLIPSE);
+                    ((MoveStruct)struct).filter(tmpPoint, bus, Shape.Type.ELLIPSE);
                 }else if(tmpKeyword == Keyword.RECTANGLE){
-                    ((MoveStruct)struct).filter(tmpPoint, bus);
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(StateMachine.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    ((MoveStruct)struct).filter(Shape.Type.RECTANGLE);
+                    ((MoveStruct)struct).filter(tmpPoint, bus, Shape.Type.RECTANGLE);
                 }else if(tmpKeyword == Keyword.SHAPE){
-                    ((MoveStruct)struct).filter(tmpPoint, bus);
+                    ((MoveStruct)struct).filter(tmpPoint, bus, Shape.Type.UNSPECIFIED);
                 }
             }
             if(tmpColor != null){
@@ -395,23 +383,11 @@ public class StateMachine{
         }else if(struct instanceof RemoveStruct){
             if(tmpPoint != null && tmpKeyword !=null){
                 if(tmpKeyword == Keyword.ELLIPSE){
-                    ((RemoveStruct)struct).filter(tmpPoint, bus);
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(StateMachine.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    ((RemoveStruct)struct).filter(Shape.Type.ELLIPSE);
+                    ((RemoveStruct)struct).filter(tmpPoint, bus, Shape.Type.ELLIPSE);
                 }else if(tmpKeyword == Keyword.RECTANGLE){
-                    ((RemoveStruct)struct).filter(tmpPoint, bus);
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(StateMachine.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    ((RemoveStruct)struct).filter(Shape.Type.RECTANGLE);
+                    ((RemoveStruct)struct).filter(tmpPoint, bus, Shape.Type.RECTANGLE);
                 }else if(tmpKeyword == Keyword.SHAPE){
-                    ((RemoveStruct)struct).filter(tmpPoint, bus);
+                    ((RemoveStruct)struct).filter(tmpPoint, bus, Shape.Type.UNSPECIFIED);
                 }
             }
             if(tmpColor != null){

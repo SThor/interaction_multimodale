@@ -38,7 +38,7 @@ public class RemoveStruct implements TestableStruct{
         }
     }
 
-    public void filter(Point target, Ivy bus) {
+    public void filter(Point target, Ivy bus, Shape.Type type) {
         try {
             bus.bindMsg("Palette:ResultatTesterPoint x=" + target.x + " y=" + target.y + " nom=(.*)", (client, args) -> {
                 try {
@@ -61,7 +61,8 @@ public class RemoveStruct implements TestableStruct{
                 }else if(args[0].startsWith("E")){
                     shape.type = Shape.Type.ELLIPSE;
                 }
-                candidates.add(shape);
+                if(type == shape.type || type == Shape.Type.UNSPECIFIED)
+                    candidates.add(shape);
             });
             bus.sendMsg("Palette:TesterPoint x=" + target.x + " y=" + target.y);
         } catch (IvyException ex) {
@@ -83,11 +84,15 @@ public class RemoveStruct implements TestableStruct{
     }
 
     public void filter(String color) {
+        System.out.println("candidates.size() = " + candidates.size());
         Iterator<Shape> it = candidates.iterator();
         while(it.hasNext()){
             Shape shape = it.next();
+            System.out.println("shape.background = " + shape.background);
+            System.out.println("color = " + color);
             if(shape.background != color){
                 it.remove();
+                System.out.println("Je supprime");
             }
         }
     }
